@@ -33,6 +33,7 @@ route.get("/:id", (req, res) => {
 })
 
 route.put("/:id", (req, res) => {
+    console.log("Atulizei");
     const { id } = req.params
     const { nome } = req.body
 
@@ -50,6 +51,7 @@ route.put("/:id", (req, res) => {
 })
 
 route.delete("/:id", (req, res) => {
+    console.log("deletando");
     const { id } = req.params
 
     const deletedFruit = fruitService.delete(id)
