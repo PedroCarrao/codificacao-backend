@@ -1,87 +1,141 @@
 import fs from "fs/promises";
+//inical
+const initialData = [
+  { id: 1, nome: "Maçã", cor: "Vermelha", preco: 3.5 },
+  { id: 2, nome: "Banana", cor: "Amarela", preco: 2.0 },
+  { id: 3, nome: "Uva", cor: "Roxa", preco: 4.0 }
+];
 
-// Ler frutas
+//base
 async function readFruits() {
   const data = await fs.readFile("./fruits.json", "utf-8");
   return JSON.parse(data);
 }
 
-// Salvar frutas
 async function writeFruits(fruits) {
   const data = JSON.stringify(fruits, null, 2);
   await fs.writeFile("./fruits.json", data, "utf-8");
 }
 
-// Listar todas
+//getall
 async function getAllFruits() {
-  return await readFruits();
+  const fruits = await readFruits();
+  console.log(" Lista de frutas:");
+  console.log(fruits);
 }
 
-// Buscar por ID
+//getbyid
 async function getFruitById(id) {
   const fruits = await readFruits();
-  return fruits.find(f => f.id === Number(id));
+  const fruit = fruits.find(f => f.id === Number(id));
+
+  if (!fruit) {
+    console.log(" Fruta não encontrada!");
+    return;
+  }
+
+  console.log(" Fruta encontrada:");
+  console.log(fruit);
 }
 
-// Criar fruta
-async function createFruit(nome) {
+
+//getbyname
+async function getFruitByName(nome) {
   const fruits = await readFruits();
+
+  const results = fruits.filter(f =>
+    f.nome.toLowerCase().includes(nome.toLowerCase())
+  );
+
+  if (results.length === 0) {
+    console.log(" Nenhuma fruta encontrada com esse nome.");
+    return;
+  }
+
+  console.log(" Resultados da busca:");
+  console.log(results);
+}
+
+//criar sem duplicados
+async function createFruit(nome, cor, preco) {
+  const fruits = await readFruits();
+
+  const exists = fruits.some(
+    f => f.nome.toLowerCase() === nome.toLowerCase()
+  );
+
+  if (exists) {
+    console.log(" Essa fruta já existe!");
+    return;
+  }
 
   const newFruit = {
     id: fruits.length > 0 ? fruits[fruits.length - 1].id + 1 : 1,
-    nome
+    nome,
+    cor,
+    preco
   };
 
   fruits.push(newFruit);
   await writeFruits(fruits);
 
-  return newFruit;
+  console.log(" Fruta criada com sucesso:");
+  console.log(newFruit);
 }
 
-// Atualizar fruta
-async function updateFruit(id, novoNome) {
+//att
+async function updateFruit(id, nome, cor, preco) {
   const fruits = await readFruits();
   const index = fruits.findIndex(f => f.id === Number(id));
 
-  if (index === -1) return null;
+  if (index === -1) {
+    console.log(" Fruta não encontrada!");
+    return;
+  }
 
-  fruits[index].nome = novoNome;
+  fruits[index] = { ...fruits[index], nome, cor, preco };
+
   await writeFruits(fruits);
 
-  return fruits[index];
+  console.log(" Fruta atualizada:");
+  console.log(fruits[index]);
 }
 
-// Deletar fruta
+//delete
 async function deleteFruit(id) {
   const fruits = await readFruits();
   const index = fruits.findIndex(f => f.id === Number(id));
 
-  if (index === -1) return false;
+  if (index === -1) {
+    console.log(" Fruta não encontrada!");
+    return;
+  }
 
-  fruits.splice(index, 1);
+  const removed = fruits.splice(index, 1);
   await writeFruits(fruits);
 
-  return true;
+  console.log(" Fruta removida:");
+  console.log(removed[0]);
 }
 
+//resetar json
+async function resetFruits() {
+  await writeFruits(initialData);
+  console.log(" Arquivo resetado com sucesso!");
+}
 
 //testando as funções
 
+await getAllFruits();
 
-console.log(" Todas as frutas:");
-console.log(await getAllFruits());
+await createFruit("Melancia", "Verde", 7.5);
+await createFruit("Maçã", "Vermelha", 3.5); // duplicado
 
-console.log("\n Buscar ID 1:");
-console.log(await getFruitById(1));
+await getFruitById(1);
+await getFruitByName("ma");
 
-console.log("\n Criar fruta:");
-console.log(await createFruit("Melancia"));
+await updateFruit(1, "Maçã Gala", "Vermelha", 4.0);
 
-console.log("\n Atualizar fruta ID 1:");
-console.log(await updateFruit(1, "Maçã Verde"));
+await deleteFruit(2);
 
-console.log("\n Deletar fruta ID 2:");
-console.log(await deleteFruit(2));
-
-console.log("\n Lista final:");
-console.log(await getAllFruits());
+await getAllFruits();
