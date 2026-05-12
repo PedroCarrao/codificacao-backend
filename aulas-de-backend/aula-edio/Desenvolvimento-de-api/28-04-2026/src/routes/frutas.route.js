@@ -34,3 +34,43 @@ frutasRoute.delete("/:id", async (req, res) => {
     await frutasService.delete(id)
     res.status(204).end()
 })
+
+// src/routes/vendasRoutes.js
+
+import express from 'express';
+import { pool } from '../config/db.js';
+
+const router = express.Router();
+
+// Buscar frutas compradas por um cliente
+router.get('/:clienteId', async (req, res) => {
+    try {
+
+        const { clienteId } = req.params;
+
+        const query = `
+            SELECT
+                clientes.nome AS cliente,
+                frutas.nome AS fruta
+            FROM vendas
+            JOIN clientes
+                ON vendas.cliente_id = clientes.id
+            JOIN frutas
+                ON vendas.fruta_id = frutas.id
+            WHERE clientes.id = $1
+        `;
+
+        const result = await pool.query(query, [clienteId]);
+
+        res.status(200).json(result.rows);
+
+    } catch (error) {
+
+        res.status(500).json({
+            erro: 'Erro ao buscar vendas'
+        });
+
+    }
+});
+
+export default router;

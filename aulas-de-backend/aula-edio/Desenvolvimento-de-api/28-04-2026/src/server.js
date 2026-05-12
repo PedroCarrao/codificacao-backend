@@ -16,3 +16,15 @@ app.use("/frutas", frutasRoute)
 app.listen(PORT, () => {
     console.log(`API rodando em http://localhost:${PORT}`);
 })
+
+import express from 'express';
+import vendasRoutes from './routes/vendasRoutes.js';
+
+const app1 = express();
+
+app1.use(express.json());
+
+app1.use('/vendas', vendasRoutes);
+app1.listen(3000, () => {
+    console.log('Servidor rodando');
+});
