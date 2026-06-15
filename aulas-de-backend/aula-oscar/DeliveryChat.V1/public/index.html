@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Delivery Clone</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-200 h-screen flex items-center justify-center p-0 md:p-4 font-sans selection:bg-teal-500 selection:text-white">
+
+  <div class="w-full h-full md:max-w-[1396px] md:h-[calc(100vh-32px)] bg-[#f0f2f5] rounded-none md:rounded-lg shadow-lg overflow-hidden flex flex-row">
+    
+    <div class="w-[35%] min-w-[340px] max-w-[400px] bg-white border-r border-gray-300 flex flex-col">
+      
+      <div class="bg-[#f0f2f5] h-[60px] p-3 flex justify-between items-center border-b border-gray-200">
+        <div class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm">
+          EU
+        </div>
+        
+        <div class="flex gap-1 bg-gray-200 p-1 rounded-lg">
+          <button id="btn-mode-customer" class="px-3 py-1 rounded-md text-xs font-bold transition-all bg-teal-600 text-white shadow-sm">
+            Cliente
+          </button>
+          <button id="btn-mode-driver" class="px-3 py-1 rounded-md text-xs font-bold transition-all text-gray-600 hover:bg-gray-300">
+            Vendedor
+          </button>
+        </div>
+      </div>
+
+      <div class="p-2 bg-white border-b border-gray-100">
+        <div class="bg-[#f0f2f5] rounded-lg px-3 py-1.5 flex items-center">
+          <input type="text" placeholder="Pesquisar ou começar uma nova conversa" class="w-full bg-transparent text-xs focus:outline-none placeholder:text-gray-500">
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto bg-white">
+        <div class="flex items-center gap-3 p-3 bg-[#f0f2f5] border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+          <div class="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center font-bold shadow-sm">
+            #101
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-baseline">
+              <h2 class="text-sm font-semibold text-gray-900 truncate">Pedido #101 (Delivery)</h2>
+              <span class="text-[11px] text-gray-500 font-medium">Agora</span>
+            </div>
+            <p id="order-status-sidebar" class="text-xs text-teal-600 truncate font-medium">Carregando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 bg-[#efeae2] flex flex-col relative">
+      
+      <div class="bg-[#f0f2f5] h-[60px] p-3 flex items-center border-b border-gray-200 z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
+            #101
+          </div>
+          <div>
+            <h1 class="text-sm font-semibold text-gray-800">Chat de Entrega - Pedido #101</h1>
+            <p id="order-status" class="text-xs text-gray-500">Status: Carregando...</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-2 bg-[#efeae2] flex flex-col">
+      </div>
+
+      <div class="p-3 bg-[#f0f2f5] flex items-center gap-3 border-t border-gray-200">
+
+        
+        <input id="msg-input" type="text" placeholder="Digite uma mensagem..." class="flex-1 bg-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 text-gray-700 shadow-sm">
+        
+        <button id="send-btn" class="bg-teal-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors shadow-sm">
+          Enviar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const orderId = 'order-101'; 
+    const messagesContainer = document.getElementById('chat-messages');
+    const statusLabel = document.getElementById('order-status');
+    const statusSidebar = document.getElementById('order-status-sidebar');
+    const msgInput = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+    
+    const btnModeCustomer = document.getElementById('btn-mode-customer');
+    const btnModeDriver = document.getElementById('btn-mode-driver');
+
+    let currentSender = 'customer';
+
+    // Alternar para modo Cliente
+    btnModeCustomer.addEventListener('click', () => {
+      currentSender = 'customer';
+      btnModeCustomer.className = "px-3 py-1 rounded-md text-xs font-bold transition-all bg-teal-600 text-white shadow-sm";
+      btnModeDriver.className = "px-3 py-1 rounded-md text-xs font-bold transition-all text-gray-600 hover:bg-gray-300";
+      msgInput.placeholder = "Digite uma mensagem como Cliente...";
+    });
+
+    // Alternar para modo Vendedor
+    btnModeDriver.addEventListener('click', () => {
+      currentSender = 'driver';
+      btnModeCustomer.className = "px-3 py-1 rounded-md text-xs font-bold transition-all text-gray-600 hover:bg-gray-300";
+      btnModeDriver.className = "px-3 py-1 rounded-md text-xs font-bold transition-all bg-gray-800 text-white shadow-sm";
+      msgInput.placeholder = "Digite uma mensagem como Vendedor...";
+    });
+
+    // Renderizar Mensagens com Visual Limpo e Profissional
+    function renderMessages(chat) {
+      const statusText = `Status: ${chat.orderStatus} | Entregador: ${chat.driver?.name || 'Não atribuído'}`;
+      statusLabel.textContent = statusText;
+      statusSidebar.textContent = chat.orderStatus; // Atualiza a barra lateral também
+      
+      messagesContainer.innerHTML = '';
+
+      chat.messages.forEach(msg => {
+        const div = document.createElement('div');
+        // Adiciona cantos arredondados suaves e sombra sutil, bem parecido com o WhatsApp
+        div.className = `max-w-[65%] rounded-lg px-3 py-1.5 text-sm shadow-sm relative `;
+        
+        if (msg.sender === 'customer') {
+          // Cliente: Direita, Vermelho (Mantendo a sua regra de cor), Letra Branca
+          div.className += 'bg-red-500 text-white self-end ml-auto rounded-tr-none';
+        } else if (msg.sender === 'driver') {
+          // Vendedor: Esquerda, Fundo Branco, Letra Escura
+          div.className += 'bg-white text-gray-800 self-start mr-auto rounded-tl-none border border-gray-200/50';
+        } else {
+          // Mensagem de sistema centralizada (estilo aviso de criptografia do WhatsApp)
+          div.className += 'bg-[#ffeecd] text-amber-900 text-center mx-auto my-2 w-auto max-w-xs text-xs rounded-md shadow-none py-1 px-3';
+        }
+
+        const senderName = msg.sender === 'customer' ? 'CLIENTE' : msg.sender === 'driver' ? 'VENDEDOR' : 'SISTEMA';
+
+        // Estrutura interna da mensagem com o balão do WhatsApp
+        div.innerHTML = `
+          ${msg.sender !== 'system' ? `<p class="font-extrabold text-[10px] tracking-wide mb-0.5 opacity-80">${senderName}</p>` : ''}
+          <p class="leading-relaxed break-words pr-8">${msg.text}</p>
+          <span class="text-[9px] absolute right-2 bottom-1 opacity-60 font-medium">${msg.timestamp}</span>
+        `;
+        messagesContainer.appendChild(div);
+      });
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Buscar dados do servidor
+    async function loadChat() {
+      try {
+        const res = await fetch(`/api/chats/${orderId}`);
+        const chat = await res.json();
+        renderMessages(chat);
+      } catch (err) {
+        console.error("Erro ao carregar chat", err);
+      }
+    }
+
+    // Enviar nova mensagem
+    async function sendMessage() {
+      const text = msgInput.value.trim();
+      if (!text) return;
+
+      const res = await fetch(`/api/chats/${orderId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: currentSender, text })
+      });
+
+      if (res.ok) {
+        msgInput.value = '';
+        loadChat(); 
+      }
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+    // Carga inicial e Polling (3s)
+    loadChat();
+    setInterval(loadChat, 3000);
+  </script>
+</body>
+</html>
